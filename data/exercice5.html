@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Carte interactive touristique</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    #map { height: 100vh; }
+    #counter {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-weight: bold;
+      z-index: 1000;
+    }
+    #reset {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <div id="counter">Clics sur la carte : 0</div>
+  <button id="reset">Réinitialiser</button>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    let clickCount = 0;
+    const initialView = [-19.7, 63.4];
+    const initialZoom = 13;
+    const map = L.map('map').setView(initialView, initialZoom);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // Ajouter les POIs
+    fetch('points.geojson')
+      .then(res => res.json())
+      .then(data => {
+        L.geoJSON(data, {
+          pointToLayer: (feature, latlng) => {
+            return L.marker(latlng);
+          },
+          onEachFeature: (feature, layer) => {
+            const props = feature.properties;
+            layer.bindPopup(`<strong>${props.name}</strong><br>${props.description || ''}`);
+
+            // Icône change au survol (si icônes dispo)
+            layer.on('mouseover', () => layer.setOpacity(0.6));
+            layer.on('mouseout', () => layer.setOpacity(1));
+          }
+        }).addTo(map);
+      });
+
+    // Ajouter le polygone
+    let zoneLayer;
+    fetch('zone.geojson')
+      .then(res => res.json())
+      .then(data => {
+        zoneLayer = L.geoJSON(data, {
+          style: {
+            color: '#228B22',
+            weight: 2,
+            fillOpacity: 0.5
+          },
+          onEachFeature: (feature, layer) => {
+            layer.on('mouseover', () => layer.setStyle({ fillColor: 'yellow' }));
+            layer.on('mouseout', () => layer.setStyle({ fillColor: '#228B22' }));
+          }
+        }).addTo(map);
+      });
+
+    // Clic sur la carte = popup + compteur
+    map.on('click', function (e) {
+      clickCount++;
+      document.getElementById('counter').textContent = `Clics sur la carte : ${clickCount}`;
+
+      const { lat, lng } = e.latlng;
+      L.popup()
+        .setLatLng(e.latlng)
+        .setContent(`Coordonnées :<br>Lat ${lat.toFixed(5)}, Lng ${lng.toFixed(5)}`)
+        .openOn(map);
+    });
+
+    // Bouton reset
+    document.getElementById('reset').addEventListener('click', () => {
+      map.setView(initialView, initialZoom);
+      clickCount = 0;
+      document.getElementById('counter').textContent = 'Clics sur la carte : 0';
+      map.closePopup();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Leaflet avec GeoJSON personnalisé</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+    <div id="map" style="height: 600px;"></div>
+
+    <script>
+        // Initialiser la carte
+        var map = L.map('map').setView([48.8566, 2.3522], 13); // Vue sur Paris
+
+        // Ajouter une couche de base (carte OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        // Données GeoJSON (ici un simple polygone)
+        var geojsonData = {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                  [
+                    [2.35, 48.85],
+                    [2.36, 48.85],
+                    [2.36, 48.86],
+                    [2.35, 48.86],
+                    [2.35, 48.85]
+                  ]
+                ]
+              },
+              "properties": {
+                "name": "Paris Square"
+              }
+            }
+          ]
+        };
+
+        // Fonction pour personnaliser le style du polygone
+        var style = function (feature) {
+          return {
+            color: "blue",          // Couleur de la bordure
+            weight: 3,              // Épaisseur de la bordure
+            opacity: 1,             // Opacité de la bordure
+            fillColor: "lightblue", // Couleur de remplissage
+            fillOpacity: 0.5       // Opacité du remplissage
+          };
+        };
+
+        // Ajouter les données GeoJSON avec le style personnalisé
+        L.geoJSON(geojsonData, { style: style }).addTo(map);
+    </script>
+</body>
+</html>
+ 

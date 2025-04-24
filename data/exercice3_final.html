@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Exercice 3 - GeoJSON et interactions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    #map { height: 600px; }
+  </style>
+</head>
+<body>
+
+<h2>Carte interactive : zones avec GeoJSON</h2>
+<div id="map"></div>
+
+<script>
+  // Initialiser la carte centrée sur l'île Maurice
+  var map = L.map('map').setView([-20.2, 57.5], 9);
+
+  // Ajouter un fond de carte OpenStreetMap
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  // GeoJSON contenant 3 zones : agricole, urbaine, forêt
+  var zones = {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {
+          "nom": "Zone agricole de l'Est",
+          "type": "agricole"
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [[[57.6, -20.1], [57.62, -20.1], [57.62, -20.08], [57.6, -20.08], [57.6, -20.1]]]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "nom": "Zone urbaine de Port-Louis",
+          "type": "urbaine"
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [[[57.48, -20.15], [57.5, -20.15], [57.5, -20.13], [57.48, -20.13], [57.48, -20.15]]]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": {
+          "nom": "Forêt de Brise Fer",
+          "type": "forêt"
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [[[57.42, -20.3], [57.44, -20.3], [57.44, -20.28], [57.42, -20.28], [57.42, -20.3]]]
+        }
+      }
+    ]
+  };
+
+  // Fonction de style conditionnel
+  function styleFeature(feature) {
+    var color, fillOpacity;
+
+    switch (feature.properties.type) {
+      case "agricole":
+        color = "orange";
+        fillOpacity = 0.4;
+        break;
+      case "urbaine":
+        color = "gray";
+        fillOpacity = 0.6;
+        break;
+      case "forêt":
+        color = "darkgreen";
+        fillOpacity = 0.5;
+        break;
+      default:
+        color = "blue";
+        fillOpacity = 0.3;
+    }
+
+    return {
+      color: color,
+      weight: 2,
+      fillOpacity: fillOpacity
+    };
+  }
+
+  // Fonction pour chaque entité GeoJSON
+  function onEachFeature(feature, layer) {
+    // Contenu du popup
+    var popupContent = "<b>" + feature.properties.nom + "</b><br>" +
+                       "Type : " + feature.properties.type + "<br>" +
+                       "<i>Cliquez pour zoomer</i>";
+
+    layer.bindPopup(popupContent);
+
+    // Clic : zoom sur la zone
+    layer.on("click", function () {
+      map.fitBounds(layer.getBounds());
+    });
+
+    // Survol : mise en évidence
+    layer.on("mouseover", function () {
+      layer.setStyle({ weight: 4, color: "blue" });
+    });
+
+    // Fin du survol : retour au style normal
+    layer.on("mouseout", function () {
+      layer.setStyle(styleFeature(feature));
+    });
+  }
+
+  // Ajout des données GeoJSON avec style et interaction
+  L.geoJSON(zones, {
+    style: styleFeature,
+    onEachFeature: onEachFeature
+  }).addTo(map);
+</script>
+
+</body>
+</html>

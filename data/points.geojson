@@ -1,0 +1,27 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Vue panoramique",
+        "description": "Un superbe point de vue sur le lagon."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [63.422, -19.684]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Aire de pique-nique",
+        "description": "Endroit idéal pour se reposer."
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [63.430, -19.675]
+      }
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Carte Thématique - Séance 4</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet-minimap@3.0.0/dist/Control.MiniMap.min.css"
+  />
+  <style>
+    #map {
+      height: 100vh;
+    }
+    .info.legend {
+      background: white;
+      padding: 8px;
+      font-size: 14px;
+      line-height: 1.5;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    }
+    .info.legend i {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 5px;
+    }
+    .custom-button {
+      background: white;
+      border: 2px solid #ccc;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-minimap@3.0.0/dist/Control.MiniMap.min.js"></script>
+  <script>
+    const map = L.map("map", {
+      center: [48.8566, 2.3522],
+      zoom: 13,
+      zoomControl: false
+    });
+
+    // Contrôle de zoom repositionné
+    L.control.zoom({ position: "bottomleft" }).addTo(map);
+
+    // Fond de carte principal
+    const baseLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors"
+    }).addTo(map);
+
+    // Mini-map avec nouvelle instance de tileLayer
+    const miniMapLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+    const miniMap = new L.Control.MiniMap(miniMapLayer, {
+      toggleDisplay: true,
+      minimized: false
+    }).addTo(map);
+
+// Ajouter un popup vide que l'on réutilisera
+const popup = L.popup();
+
+// Lors d’un clic sur la carte, afficher les coordonnées
+map.on("click", function (e) {
+  const { lat, lng } = e.latlng;
+  popup
+    .setLatLng(e.latlng)
+    .setContent(`📍 Vous avez cliqué ici :<br><strong>Lat :</strong> ${lat.toFixed(5)}<br><strong>Lng :</strong> ${lng.toFixed(5)}`)
+    .openOn(map);
+});
+
+    // Données GeoJSON fictives
+    const quartiers = {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": { "nom": "Quartier Vert", "type": "résidentiel" },
+          "geometry": {
+            "type": "Polygon",
+            "coordinates": [[[2.35, 48.857], [2.36, 48.857], [2.36, 48.862], [2.35, 48.862], [2.35, 48.857]]]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": { "nom": "Zone Rouge", "type": "industriel" },
+          "geometry": {
+            "type": "Polygon",
+            "coordinates": [[[2.355, 48.85], [2.365, 48.85], [2.365, 48.855], [2.355, 48.855], [2.355, 48.85]]]
+          }
+        }
+      ]
+    };
+
+    function styleQuartier(feature) {
+      return {
+        fillColor: feature.properties.type === "résidentiel" ? "green" : "red",
+        weight: 2,
+        color: "#555",
+        fillOpacity: 0.6
+      };
+    }
+
+    L.geoJSON(quartiers, {
+      style: styleQuartier,
+      onEachFeature: (feature, layer) => {
+        layer.bindPopup(`<strong>${feature.properties.nom}</strong><br>Type : ${feature.properties.type}`);
+      }
+    }).addTo(map);
+
+    // Marqueur personnalisé
+    const icon = L.icon({
+      iconUrl: "https://cdn-icons-png.flaticon.com/512/252/252025.png",
+      iconSize: [32, 32],
+      iconAnchor: [16, 32]
+    });
+
+    L.marker([48.8566, 2.3522], { icon }).addTo(map)
+      .bindPopup("📍 Centre-ville");
+
+    // Légende
+    const legend = L.control({ position: "bottomright" });
+    legend.onAdd = function () {
+      const div = L.DomUtil.create("div", "info legend");
+      div.innerHTML = `
+        <h4>Légende</h4>
+        <i style="background: green"></i> Résidentiel<br>
+        <i style="background: red"></i> Industriel
+      `;
+      return div;
+    };
+    legend.addTo(map);
+
+    // Échelle
+    L.control.scale().addTo(map);
+
+    // Bouton personnalisé
+    const customButton = L.control({ position: "topright" });
+    customButton.onAdd = function () {
+      const btn = L.DomUtil.create("button", "custom-button");
+      btn.innerHTML = "📍 Recentrer";
+      btn.onclick = () => {
+        map.setView([48.8566, 2.3522], 13);
+      };
+      return btn;
+    };
+    customButton.addTo(map);
+  </script>
+</body>
+</html>

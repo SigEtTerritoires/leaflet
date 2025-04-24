@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exercice Couches Leaflet - Avancé</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map { height: 500px; width: 100%; }
+    </style>
+</head>
+<body>
+    <h2>Gestion des couches et interactions</h2>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([-20.2, 57.5], 10);
+
+        // Fonds de carte
+        var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        var toner = L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {
+            attribution: '© Stamen'
+        });
+
+        // Objets vectoriels
+        var zone = L.polygon([
+            [-20.24, 57.48], [-20.26, 57.50], [-20.25, 57.52], [-20.23, 57.50]
+        ], {
+            color: 'green',
+            fillOpacity: 0.4
+        }).bindPopup("Zone naturelle").bindTooltip("Zone verte protégée");
+
+        var ligne = L.polyline([
+            [-20.17, 57.51], [-20.20, 57.54], [-20.22, 57.52]
+        ], {
+            color: 'blue',
+            weight: 4
+        }).bindPopup("Trajet principal");
+
+        var cercle = L.circle([-20.19, 57.48], {
+            radius: 2000,
+            color: 'red',
+            fillOpacity: 0.3
+        }).bindPopup("Rayon de 2 km").bindTooltip("Zone d’influence autour d’un point");
+
+        // Couche GeoJSON 1
+        var geojsonData1 = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": { "nom": "Zone agricole" },
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[[57.52, -20.24], [57.54, -20.24], [57.54, -20.22], [57.52, -20.22], [57.52, -20.24]]]
+                }
+            }]
+        };
+
+        var geojsonLayer1 = L.geoJSON(geojsonData1, {
+            style: { color: "orange", weight: 2, fillOpacity: 0.5 },
+            onEachFeature: function (feature, layer) {
+                layer.bindPopup("Nom : " + feature.properties.nom);
+                layer.bindTooltip("Agriculture vivrière");
+                layer.on("click", function () {
+                    layer.setStyle({ color: "darkorange" }); // Changement de couleur
+                    map.fitBounds(layer.getBounds());
+                });
+            }
+        });
+
+        // Couche GeoJSON 2 (nouveau polygone)
+        var geojsonData2 = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": { "nom": "Zone urbaine" },
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[[57.50, -20.20], [57.52, -20.20], [57.52, -20.18], [57.50, -20.18], [57.50, -20.20]]]
+                }
+            }]
+        };
+
+        var geojsonLayer2 = L.geoJSON(geojsonData2, {
+            style: { color: "purple", weight: 2, fillOpacity: 0.6 },
+            onEachFeature: function (feature, layer) {
+                layer.bindPopup("Nom : " + feature.properties.nom);
+                layer.bindTooltip("Zone résidentielle dense");
+                layer.on("click", function () {
+                    layer.setStyle({ color: "blueviolet" });
+                    map.fitBounds(layer.getBounds());
+                });
+            }
+        });
+
+        // Groupes de couches
+        var couchesVecteurs = L.layerGroup([zone, ligne, cercle]);
+        var couchesGeoJSON = L.layerGroup([geojsonLayer1, geojsonLayer2]);
+
+        // Contrôle des calques
+        var fond = {
+            "OpenStreetMap": osm,
+            "Toner Lite": toner
+        };
+
+        var donnees = {
+            "Objets vectoriels": couchesVecteurs,
+            "Zones GeoJSON": couchesGeoJSON
+        };
+
+        L.control.layers(fond, donnees).addTo(map);
+
+        // Ajout par défaut
+        couchesVecteurs.addTo(map);
+        couchesGeoJSON.addTo(map);
+    </script>
+</body>
+</html>

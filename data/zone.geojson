@@ -1,0 +1,23 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Réserve naturelle"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [63.420, -19.680],
+            [63.435, -19.680],
+            [63.435, -19.670],
+            [63.420, -19.670],
+            [63.420, -19.680]
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Leaflet avec GeoJSON local</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+    <h2>Affichage de Paris depuis un fichier GeoJSON</h2>
+    <div id="map" style="height: 600px;"></div>
+
+    <script>
+        // Initialiser la carte
+        var map = L.map('map').setView([48.8566, 2.3522], 13);
+
+        // Ajouter une couche de fond
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // Charger le fichier GeoJSON
+        fetch('paris.geojson')
+            .then(response => response.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    pointToLayer: function (feature, latlng) {
+                        return L.marker(latlng).bindPopup(
+                            "<b>" + feature.properties.name + "</b><br>" + feature.properties.description
+                        );
+                    }
+                }).addTo(map);
+            })
+            .catch(error => console.error('Erreur lors du chargement du fichier GeoJSON :', error));
+    </script>
+</body>
+</html>
